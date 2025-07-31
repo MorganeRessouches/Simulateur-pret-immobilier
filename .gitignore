@@ -1,0 +1,12 @@
+# Environnement virtuel
+venv/
+
+# Cache Python
+__pycache__/
+*.pyc
+
+# Fichiers de données volumineux
+data/
+
+# Fichier VSCode
+.vscode/
