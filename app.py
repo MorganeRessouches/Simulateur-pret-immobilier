@@ -81,6 +81,8 @@ epargne_totale = epargne_a + epargne_b
 salaire_total = salaire_a + salaire_b
 epargne_mensuelle_totale = epargne_m_a + epargne_m_b
 
+emprunt = False
+
 # --- AFFICHAGE DES RÉSULTATS ---
 st.markdown("---")
 st.header("📊 Synthèse du financement")
@@ -108,10 +110,19 @@ if montant_bien is not None:
         with col2:
             # On affiche clairement l'apport qui a été utilisé dans le calcul (l'objectif)
             st.metric(label="Apport considéré (Objectif)", value=f"{apport_objectif:,.0f} €".replace(",", " "))
-            st.caption(f"Votre épargne disponible : {epargne_totale:,.0f} €".replace(",", " "))
+            epargne_pct = (epargne_totale/montant_bien)*100
+            st.caption(f"Votre épargne disponible est de {epargne_totale:,.0f} €.".replace(",", " "))
+        if epargne_pct>20:
+            st.success(f"Félicitation ! Votre épargne représente {epargne_pct:.0f}% du projet, ce qui est largement suffisant.")
+        elif epargne_pct>10:
+            st.success(f"Félicitation ! Votre épargne représente {epargne_pct:.0f}% du projet, ce qui est souvent suffisant.")
+        else:
+            st.warning(f"Votre épargne représente {epargne_pct:.0f}% du projet, ce qui n'est généralement pas suffisant.")
         if apport_validé:
-            st.success(f"Félicitations ! Votre épargne couvre l'apport souhaité de {apport_souhaite_pct}%.")
+            st.success(f"De plus, votre épargne couvre l'apport souhaité de {apport_souhaite_pct}%.")
             st.write(f"On considère donc désormais un apport de {epargne_totale:,.0f} €".replace(",", " "))
+        else:
+            st.write(f"Il vous manque {apport_objectif-epargne_totale:,.0f} € d'apport pour atteindre l'objectif.".replace(",", " "))
 
         st.markdown("---")
 
