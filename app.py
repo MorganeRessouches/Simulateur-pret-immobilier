@@ -2,6 +2,7 @@ import streamlit as st
 from dateutil.relativedelta import relativedelta
 from datetime import date
 import locale
+import pandas as pd
 
 from utils import *
 
@@ -149,3 +150,69 @@ if emprunt and not apport_validé:
     date_objectif_str = date_objectif.strftime("%B %Y").encode('latin-1').decode('utf-8')
     durée_str = formater_duree(nombre_mois)
     st.info(f"Il vous faut encore {durée_str}, soit jusqu'en {date_objectif_str} pour compléter votre apport de {apport:,.0f} €.".replace(",", " "))
+
+if emprunt:
+    st.markdown("---")
+    st.header("🔍 Analyse des options de prêt")
+
+    # Dictionnaire pour lier les durées et les taux saisis dans la sidebar
+    durees_taux = {
+        15: taux_15_ans,
+        20: taux_20_ans,
+        25: taux_25_ans,
+    }
+
+    # On prépare une liste pour stocker les résultats de chaque simulation
+    resultats_prets = []
+    for duree, taux in durees_taux.items():
+        details_pret = calculer_details_pret(
+            montant_a_emprunter,
+            taux,
+            duree,
+            taux_assurance_pct
+        )
+        
+        # On ajoute le taux d'endettement, qui dépend du salaire total
+        details_pret['taux_endettement_pct'] = (details_pret['mensualite_avec_assurance'] / salaire_total) * 100 if salaire_total > 0 else 0
+        
+        resultats_prets.append(details_pret)
+
+    # On transforme notre liste de résultats en DataFrame Pandas pour un affichage facile
+    df_prets = pd.DataFrame(resultats_prets)
+    
+    # --- Création de la colonne "Verdict" ---
+    def get_verdict(taux_endettement):
+        if taux_endettement > 35:
+            return "❌ Élevé"
+        elif taux_endettement > 33:
+            return "⚠️ Prudent"
+        else:
+            return "✅ Faisable"
+
+    df_prets['Verdict'] = df_prets['taux_endettement_pct'].apply(get_verdict)
+
+    # --- Préparation du DataFrame pour l'affichage ---
+    df_display = df_prets.rename(columns={
+        'duree_annees': 'Durée (ans)',
+        'taux_nominal_pct': 'Taux nominal (%)',
+        'mensualite_avec_assurance': 'Mensualité (€)',
+        'cout_total_credit': 'Coût total du crédit (€)',
+        'taux_endettement_pct': "Taux d'endettement (%)"
+    })
+
+    st.dataframe(
+        df_display,
+        column_config={
+            "Durée (ans)": st.column_config.NumberColumn(format="%d ans"),
+            "Taux nominal (%)": st.column_config.NumberColumn(format="%.2f %%"),
+            "Mensualité (€)": st.column_config.NumberColumn(format="%d €"),
+            "Coût total du crédit (€)": st.column_config.NumberColumn(format="%d €"),
+            "Taux d'endettement (%)": st.column_config.ProgressColumn(
+                format="%.1f %%",
+                min_value=0,
+                max_value=50, 
+            ),
+        },
+        hide_index=True,
+        use_container_width=True
+    )
