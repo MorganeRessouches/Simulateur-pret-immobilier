@@ -1,4 +1,9 @@
 import streamlit as st
+from dateutil.relativedelta import relativedelta
+from datetime import date
+import locale
+
+from utils import *
 
 # --- Configuration de la page ---
 st.set_page_config(
@@ -65,9 +70,9 @@ with st.expander("👤 Renseignez votre situation financière"):
         epargne_m_a = st.number_input("Épargne mensuelle", min_value=0, value=700, key='epargne_m_a')
     with col_b:
         st.write("**Personne B**")
-        salaire_b = st.number_input("Salaire net", min_value=0, value=0, key='salaire_b')
+        salaire_b = st.number_input("Salaire net", min_value=0, value=2000, key='salaire_b')
         epargne_b = st.number_input("Épargne disponible", min_value=0, value=20000, key='epargne_b')
-        epargne_m_b = st.number_input("Épargne mensuelle", min_value=0, value=0, key='epargne_m_b')
+        epargne_m_b = st.number_input("Épargne mensuelle", min_value=0, value=800, key='epargne_m_b')
 
 
 # --- CALCULS AUTOMATIQUES ---
@@ -91,6 +96,9 @@ if montant_bien is not None:
 
     # 3. Le montant à emprunter est calculé sur la base de cet apport objectif.
     montant_a_emprunter = cout_total_projet - apport
+    
+    apport_validé = epargne_totale>=apport_objectif
+    emprunt = montant_a_emprunter>epargne_totale
 
     with st.container(border=True):
         col1, col2 = st.columns(2)
@@ -101,14 +109,13 @@ if montant_bien is not None:
             # On affiche clairement l'apport qui a été utilisé dans le calcul (l'objectif)
             st.metric(label="Apport considéré (Objectif)", value=f"{apport_objectif:,.0f} €".replace(",", " "))
             st.caption(f"Votre épargne disponible : {epargne_totale:,.0f} €".replace(",", " "))
-        if epargne_totale>=apport_objectif:
+        if apport_validé:
             st.success(f"Félicitations ! Votre épargne couvre l'apport souhaité de {apport_souhaite_pct}%.")
             st.write(f"On considère donc désormais un apport de {epargne_totale:,.0f} €".replace(",", " "))
 
         st.markdown("---")
 
-        if montant_a_emprunter>epargne_totale:
-
+        if emprunt:
             st.metric(label="Montant à emprunter", value=f"{montant_a_emprunter:,.0f} €".replace(",", " "))
             st.caption(f"Calcul : {cout_total_projet:,.0f} € (Coût total) - {apport:,.0f} € (Apport)".replace(",", " "))
         else:
@@ -121,3 +128,13 @@ st.subheader("💰 Récapitulatif de votre situation")
 col_s1, col_s2 = st.columns(2)
 col_s1.metric("Salaire net mensuel total", f"{salaire_total:,.0f} €".replace(",", " "))
 col_s2.metric("Capacité d'épargne mensuelle", f"{epargne_mensuelle_totale:,.0f} €".replace(",", " "))
+
+if emprunt and not apport_validé:
+    nombre_mois = (apport_objectif -  epargne_totale) / epargne_mensuelle_totale
+    date_actuelle = date.today()
+    date_objectif = date_actuelle + relativedelta(months=int(nombre_mois))
+    locale.setlocale(locale.LC_TIME, 'fr_FR.UTF-8')
+    # Formatage de la date en "Mois Année"
+    date_objectif_str = date_objectif.strftime("%B %Y").encode('latin-1').decode('utf-8')
+    durée_str = formater_duree(nombre_mois)
+    st.info(f"Il vous faut encore {durée_str}, soit jusqu'en {date_objectif_str} pour compléter votre apport de {apport:,.0f} €.".replace(",", " "))
