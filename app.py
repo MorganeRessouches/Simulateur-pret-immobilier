@@ -85,11 +85,12 @@ if montant_bien is not None:
     frais_notaire_valeur = montant_bien * (frais_notaire_pct / 100)
     cout_total_projet = montant_bien + frais_notaire_valeur
 
-    # 2. L'apport utilisé pour le calcul est l'apport souhaité (objectif).
+    # 2. L'apport utilisé pour le calcul est le maximum entre l'apport souhaité (objectif) et l'épargne actuelle.
     apport_objectif = montant_bien * (apport_souhaite_pct / 100)
+    apport = max(apport_objectif, epargne_totale)
 
     # 3. Le montant à emprunter est calculé sur la base de cet apport objectif.
-    montant_a_emprunter = cout_total_projet - apport_objectif
+    montant_a_emprunter = cout_total_projet - apport
 
     with st.container(border=True):
         col1, col2 = st.columns(2)
@@ -100,13 +101,16 @@ if montant_bien is not None:
             # On affiche clairement l'apport qui a été utilisé dans le calcul (l'objectif)
             st.metric(label="Apport considéré (Objectif)", value=f"{apport_objectif:,.0f} €".replace(",", " "))
             st.caption(f"Votre épargne disponible : {epargne_totale:,.0f} €".replace(",", " "))
+        if epargne_totale>=apport_objectif:
+            st.success(f"Félicitations ! Votre épargne couvre l'apport souhaité de {apport_souhaite_pct}%.")
+            st.write(f"On considère donc désormais un apport de {epargne_totale:,.0f} €".replace(",", " "))
 
         st.markdown("---")
 
         if montant_a_emprunter>epargne_totale:
 
             st.metric(label="Montant à emprunter", value=f"{montant_a_emprunter:,.0f} €".replace(",", " "))
-            st.caption(f"Calcul : {cout_total_projet:,.0f} € (Coût total) - {apport_objectif:,.0f} € (Apport Objectif)".replace(",", " "))
+            st.caption(f"Calcul : {cout_total_projet:,.0f} € (Coût total) - {apport:,.0f} € (Apport)".replace(",", " "))
         else:
             st.success("Félicitations ! Votre apport couvre la totalité du coût du projet.")
 else:
