@@ -10,7 +10,7 @@ from utils import *
 st.set_page_config(
     page_title="Simulateur de Projet Immobilier",
     page_icon="🏡",
-    layout="centered"
+    layout="wide"
 )
 
 # --- Barre Latérale pour les taux et paramètres globaux ---
@@ -181,32 +181,35 @@ if emprunt:
     df_prets = pd.DataFrame(resultats_prets)
     
     # --- Création de la colonne "Verdict" ---
-    def get_verdict(taux_endettement):
-        if taux_endettement > 35:
-            return "❌ Élevé"
-        elif taux_endettement > 33:
+    def get_verdict(x):
+        if x['taux_endettement_pct'] > 35:
+            salaire_manquant = x['salaire_mensuel_minimum'] - salaire_total
+            return f"❌ Élevé : il vous manque {salaire_manquant:,.0f} € de salaire.".replace(",", " ")
+        elif x['taux_endettement_pct'] > 33:
             return "⚠️ Prudent"
         else:
             return "✅ Faisable"
 
-    df_prets['Verdict'] = df_prets['taux_endettement_pct'].apply(get_verdict)
+    df_prets['Verdict'] = df_prets.apply(get_verdict, axis = 1)
 
     # --- Préparation du DataFrame pour l'affichage ---
     df_display = df_prets.rename(columns={
-        'duree_annees': 'Durée (ans)',
+        'duree_annees': 'Durée',
         'taux_nominal_pct': 'Taux nominal (%)',
         'mensualite_avec_assurance': 'Mensualité (€)',
         'cout_total_credit': 'Coût total du crédit (€)',
+        'salaire_mensuel_minimum': 'Salaire mensuel minimum (€)',
         'taux_endettement_pct': "Taux d'endettement (%)"
     })
 
     st.dataframe(
         df_display,
         column_config={
-            "Durée (ans)": st.column_config.NumberColumn(format="%d ans"),
+            "Durée": st.column_config.NumberColumn(format="%d ans"),
             "Taux nominal (%)": st.column_config.NumberColumn(format="%.2f %%"),
             "Mensualité (€)": st.column_config.NumberColumn(format="%d €"),
             "Coût total du crédit (€)": st.column_config.NumberColumn(format="%d €"),
+            "Salaire mensuel minimum (€)": st.column_config.NumberColumn(format="%d €"),
             "Taux d'endettement (%)": st.column_config.ProgressColumn(
                 format="%.1f %%",
                 min_value=0,

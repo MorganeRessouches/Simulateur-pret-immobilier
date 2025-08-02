@@ -51,9 +51,13 @@ def calculer_details_pret(montant_emprunte: float, taux_annuel_nominal_pct: floa
     mensualite_avec_assurance = mensualite_hors_assurance + mensualite_assurance
     cout_total_credit = (mensualite_avec_assurance * nombre_mensualites) - montant_emprunte
 
+    # --- Calcul du salaire net mensuel minimum requis ---
+    salaire_minimum = mensualite_avec_assurance / 0.35
+
     return {
         "duree_annees": duree_annees,
         "taux_nominal_pct": taux_annuel_nominal_pct,
         "mensualite_avec_assurance": mensualite_avec_assurance,
         "cout_total_credit": cout_total_credit,
+        "salaire_mensuel_minimum": salaire_minimum,
     }
