@@ -35,11 +35,11 @@ Voici les étapes de développement, de la migration de l'existant à l'ajout de
     -   [x] Mise en place des champs de saisie principaux (montant du bien, salaires, épargne)
     -   [x] Calculs de base : coût du projet, apport, montant à emprunter
 
--   [ ] **Phase 2 : Logique de simulation**
+-   [x] **Phase 2 : Logique de simulation**
     -   [x] Affichage du temps nécessaire pour compléter l'apport
-    -   [ ] Calcul des mensualités (assurance incluse) selon la durée du prêt (15, 20, 25 ans)
-    -   [ ] Calcul du coût total des intérêts
-    -   [ ] Calcul du taux d'endettement et affichage conditionnel (alerte si dépassement)
+    -   [x] Calcul des mensualités (assurance incluse) selon la durée du prêt (15, 20, 25 ans)
+    -   [x] Calcul du coût total des intérêts
+    -   [x] Calcul du taux d'endettement et affichage conditionnel (alerte si dépassement)
 
 -   [ ] **Phase 3 : Fonctionnalités avancées**
     -   [ ] Création du graphique interactif (coûts vs salaires)
