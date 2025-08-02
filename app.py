@@ -184,7 +184,7 @@ if emprunt:
     def get_verdict(x):
         if x['taux_endettement_pct'] > 35:
             salaire_manquant = x['salaire_mensuel_minimum'] - salaire_total
-            return f"❌ Élevé : il vous manque {salaire_manquant:,.0f} € de salaire.".replace(",", " ")
+            return f"❌ Élevé : il vous manque {salaire_manquant:,.0f} €.".replace(",", " ")
         elif x['taux_endettement_pct'] > 33:
             return "⚠️ Prudent"
         else:
@@ -193,28 +193,53 @@ if emprunt:
     df_prets['Verdict'] = df_prets.apply(get_verdict, axis = 1)
 
     # --- Préparation du DataFrame pour l'affichage ---
-    df_display = df_prets.rename(columns={
-        'duree_annees': 'Durée',
+    df_display = df_prets.copy()
+
+    # 1. Formatage des devises en chaînes de caractères avec séparateur d'espace
+    df_display['mensualite_avec_assurance'] = df_display['mensualite_avec_assurance'].apply(
+        lambda x: f"{x:,.0f}".replace(",", " ") + " €"
+    )
+    df_display['cout_total_credit'] = df_display['cout_total_credit'].apply(
+        lambda x: f"{x:,.0f}".replace(",", " ") + " €"
+    )
+    df_display['salaire_mensuel_minimum'] = df_display['salaire_mensuel_minimum'].apply(
+        lambda x: f"{x:,.0f}".replace(",", " ") + " €"
+    )
+
+    # 2. Renommage des colonnes pour un affichage plus clair
+    df_display = df_display.rename(columns={
+        'duree_annees': 'Durée (ans)',
         'taux_nominal_pct': 'Taux nominal (%)',
-        'mensualite_avec_assurance': 'Mensualité (€)',
-        'cout_total_credit': 'Coût total du crédit (€)',
-        'salaire_mensuel_minimum': 'Salaire mensuel minimum (€)',
+        'mensualite_avec_assurance': 'Mensualité',
+        'cout_total_credit': 'Coût total du crédit',
+        'salaire_mensuel_minimum': 'Salaire mensuel minimum',
         'taux_endettement_pct': "Taux d'endettement (%)"
     })
 
+    # 3. Sélection et réorganisation de l'ordre final des colonnes
+    df_display = df_display[[
+        'Durée (ans)',
+        'Taux nominal (%)',
+        'Mensualité',
+        'Coût total du crédit',
+        'Salaire mensuel minimum',
+        "Taux d'endettement (%)",
+        'Verdict'
+    ]]
+
+    # --- Affichage du DataFrame ---
+    # Le column_config est maintenant plus simple, car on ne formate plus les devises ici.
     st.dataframe(
         df_display,
         column_config={
-            "Durée": st.column_config.NumberColumn(format="%d ans"),
+            "Durée (ans)": st.column_config.NumberColumn(format="%d ans"),
             "Taux nominal (%)": st.column_config.NumberColumn(format="%.2f %%"),
-            "Mensualité (€)": st.column_config.NumberColumn(format="%d €"),
-            "Coût total du crédit (€)": st.column_config.NumberColumn(format="%d €"),
-            "Salaire mensuel minimum (€)": st.column_config.NumberColumn(format="%d €"),
             "Taux d'endettement (%)": st.column_config.ProgressColumn(
                 format="%.1f %%",
                 min_value=0,
-                max_value=50, 
+                max_value=50,
             ),
+            "Verdict": st.column_config.Column(width="medium")
         },
         hide_index=True,
         use_container_width=True
