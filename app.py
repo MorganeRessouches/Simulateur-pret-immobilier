@@ -244,3 +244,8 @@ if emprunt:
         hide_index=True,
         use_container_width=True
     )
+
+    # --- GRAPHIQUE DU COMPROMIS DURÉE / COÛT / MENSUALITÉ ---
+    
+    fig = creation_graph(df_prets, salaire_total)
+    st.plotly_chart(fig, use_container_width=True)
