@@ -7,9 +7,9 @@ Ce projet est une application web construite avec Python et Streamlit pour simul
 Cette application permet de passer d'une simple idée à un plan financier complet.
 
 *   **💰 Calcul du financement :** Calcule le coût total du projet (prix du bien + frais de notaire) et le montant à emprunter en fonction de l'apport.
-*   **📊 Analyse de l'endettement :** Compare votre salaire aux mensualités requises pour différentes durées de prêt (15, 20, 25 ans) et affiche votre taux d'endettement.*(Fonctionnalité prévue dans la roadmap)*
+*   **📊 Analyse de l'endettement :** Compare votre salaire aux mensualités requises pour différentes durées de prêt (15, 20, 25 ans) et affiche votre taux d'endettement.
 *   **⏳ Analyse de l'apport :** Si votre apport est insuffisant, l'application estime le temps nécessaire pour atteindre votre objectif en fonction de votre capacité d'épargne.
-*   **📈 Graphiques interactifs :** Visualisez l'impact de la durée du prêt sur vos mensualités et sur le coût total des intérêts.*(Fonctionnalité prévue dans la roadmap)*
+*   **📈 Graphiques interactifs :** Visualisez l'impact de la durée du prêt sur vos mensualités et sur le coût total des intérêts.
 *   **Scenario de remboursement anticipé :** Simulez l'impact d'un remboursement anticipé sur la durée et le coût total de votre crédit. *(Fonctionnalité prévue dans la roadmap)*
 
 ## Contexte et Point de Départ
@@ -42,7 +42,7 @@ Voici les étapes de développement, de la migration de l'existant à l'ajout de
     -   [x] Calcul du taux d'endettement et affichage conditionnel (alerte si dépassement)
 
 -   [ ] **Phase 3 : Fonctionnalités avancées**
-    -   [ ] Création du graphique interactif (coûts vs salaires)
+    -   [x] Création du graphique interactif (coûts vs salaires)
     -   [ ] Module de simulation de remboursement anticipé
 
 -   [ ] **Phase 4 : Finalisation et Déploiement**
