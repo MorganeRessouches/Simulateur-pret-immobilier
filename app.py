@@ -308,5 +308,21 @@ if emprunt:
             hide_index=True,
             use_container_width=True
         )
+
+        with st.expander("🤔 Pourquoi le temps économisé est-il si important ?"):
+            st.info(
+                """
+                **Ce n'est pas une simple division !**
+
+                Un remboursement anticipé ne supprime pas simplement les "dernières" mensualités. Il s'attaque directement au **capital restant dû**.
+
+                **Voici l'effet "boule de neige" :**
+                1.  Votre capital à rembourser diminue instantanément.
+                2.  Dès le mois suivant, les **intérêts sont calculés sur un capital plus faible**, et sont donc moins élevés.
+                3.  Comme votre mensualité reste la même, une **plus grande partie sert à rembourser le capital**, ce qui accélère encore plus le processus.
+
+                Vous économisez donc non seulement le montant remboursé, mais surtout **tous les intérêts que ce montant aurait générés jusqu'à la fin du prêt.**
+                """
+            )
     else:
         st.warning("L'année de remboursement choisie est supérieure ou égale aux durées des prêts. Aucune simulation n'est possible.")
