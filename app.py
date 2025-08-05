@@ -274,6 +274,14 @@ if emprunt:
         resultats_ra_list = []
     
     if montant_remboursement_anticipe>0:
+
+        choix_impact = st.radio(
+            "Quel est l'objectif de ce remboursement ?",
+            options=["Réduire la durée du prêt", "Réduire les mensualités"],
+            horizontal=True,
+            index=0 # Par défaut, on cherche à réduire la durée
+        )
+
         # On itère sur df_prets
         for index, pret_initial in df_prets.iterrows():
             
@@ -281,6 +289,7 @@ if emprunt:
             if annee_remboursement < pret_initial['duree_annees']:
                 
                 sim_ra = calculer_remboursement_anticipe(
+                    choix_impact=choix_impact,
                     mensualite_hors_assurance=pret_initial['mensualite_hors_assurance'],
                     duree_initiale_mois=pret_initial['duree_annees']*12,
                     taux_mensuel_nominal=pret_initial['taux_nominal_pct']/1200,
@@ -293,16 +302,38 @@ if emprunt:
                 gain_total = sim_ra['gain_interets'] + gain_assurance
                 
                 # On stocke les résultats de cette simulation dans un dictionnaire
-                resultats_ra_list.append({
+
+                resultat = {
                     "Durée Initiale": f"{pret_initial['duree_annees']} ans",
-                    "Nouvelle Durée": formater_duree(sim_ra['nouvelle_duree_totale_ans']*12),
-                    "Temps Économisé": formater_duree(sim_ra['duree_reduite_mois']),
                     "Gain Total Estimé": f"{gain_total:,.0f} €".replace(",", " ")
-                })
+                }
+                
+                if choix_impact == "Réduire la durée du prêt":
+                    resultat["Nouvelle Durée"] = formater_duree(sim_ra['nouvelle_duree_totale_ans'] * 12)
+                    resultat["Temps Économisé"] = formater_duree(sim_ra['duree_reduite_mois'])
+                else: # "Réduire les mensualités"
+                    mensualite_initale = pret_initial['mensualite_avec_assurance']
+                    # On ajoute le coût de l'assurance à la nouvelle mensualité de crédit
+                    nouvelle_mensualite_avec_assurance = sim_ra['nouvelle_mensualite'] + (mensualite_initale - pret_initial['mensualite_hors_assurance'])
+                    
+                    resultat["Ancienne Mensualité"] = f"{mensualite_initale:,.0f} €".replace(",", " ")
+                    resultat["Nouvelle Mensualité"] = f"{nouvelle_mensualite_avec_assurance:,.0f} €".replace(",", " ")
+                    resultat["Baisse par mois"] = f"{sim_ra['reduction_mensualite']:,.0f} €".replace(",", " ")
+
+                resultats_ra_list.append(resultat)
+
 
         # On vérifie si on a des résultats à afficher
         if resultats_ra_list:
             df_ra = pd.DataFrame(resultats_ra_list)
+
+            if choix_impact == "Réduire la durée du prêt":
+                colonnes_ordonnees = ["Durée Initiale", "Nouvelle Durée", "Temps Économisé", "Gain Total Estimé"]
+            else:
+                colonnes_ordonnees = ["Durée Initiale", "Ancienne Mensualité", "Nouvelle Mensualité", "Baisse par mois", "Gain Total Estimé"]
+            
+            # On filtre le DataFrame pour n'avoir que les colonnes pertinentes et dans l'ordre
+            df_ra = df_ra[colonnes_ordonnees]
             
             st.dataframe(
                 df_ra,
@@ -310,20 +341,38 @@ if emprunt:
                 use_container_width=True
             )
 
-            with st.expander("🤔 Pourquoi le temps économisé est-il si important ?"):
-                st.info(
-                    """
-                    **Ce n'est pas une simple division !**
+            with st.expander("🤔 Comment est calculé le gain ?"):
+                if choix_impact == "Réduire la durée du prêt":
+                    st.info(
+                        """
+                        Pourquoi le temps économisé est-il si important ?
 
-                    Un remboursement anticipé ne supprime pas simplement les "dernières" mensualités. Il s'attaque directement au **capital restant dû**.
+                        **Ce n'est pas une simple division !**
 
-                    **Voici l'effet "boule de neige" :**
-                    1.  Votre capital à rembourser diminue instantanément.
-                    2.  Dès le mois suivant, les **intérêts sont calculés sur un capital plus faible**, et sont donc moins élevés.
-                    3.  Comme votre mensualité reste la même, une **plus grande partie sert à rembourser le capital**, ce qui accélère encore plus le processus.
+                        Un remboursement anticipé ne supprime pas simplement les "dernières" mensualités. Il s'attaque directement au **capital restant dû**.
 
-                    Vous économisez donc non seulement le montant remboursé, mais surtout **tous les intérêts que ce montant aurait générés jusqu'à la fin du prêt.**
-                    """
-                )
+                        **Voici l'effet "boule de neige" :**
+                        1.  Votre capital à rembourser diminue instantanément.
+                        2.  Dès le mois suivant, les **intérêts sont calculés sur un capital plus faible**, et sont donc moins élevés.
+                        3.  Comme votre mensualité reste la même, une **plus grande partie sert à rembourser le capital**, ce qui accélère encore plus le processus.
+
+                        Vous économisez donc non seulement le montant remboursé, mais surtout **tous les intérêts que ce montant aurait générés jusqu'à la fin du prêt.**
+                        """
+                    )
+                else: # "Réduire les mensualités"
+                    st.info(
+                        """
+                        A quoi ça sert ?
+
+                        **Plus de souplesse pour votre budget.**
+
+                        **Voici l'effet "Respiration Financière" :**
+                        1.  Votre capital à rembourser (**capital restant dû**) diminue instantanément.
+                        2.  La banque **recalcule une nouvelle mensualité** pour la même durée restante, mais sur ce capital réduit.
+                        3.  Puisque vous devez moins d'argent au total, votre nouvelle mensualité est mathématiquement plus faible, vous donnant **plus de pouvoir d'achat chaque mois**.
+
+                        Le "Gain Total Estimé" représente **l'économie totale d'intérêts** que vous réaliserez sur toute la durée restante du prêt grâce à ce capital réduit.
+                        """
+                    )
         else:
             st.warning("L'année de remboursement choisie est supérieure ou égale aux durées des prêts. Aucune simulation n'est possible.")

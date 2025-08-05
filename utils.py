@@ -146,6 +146,7 @@ def creation_graph(df_prets: pd.DataFrame, salaire_total: float) -> go.Figure:
 
 
 def calculer_remboursement_anticipe(
+    choix_impact: str,
     mensualite_hors_assurance: float,
     duree_initiale_mois: int,
     taux_mensuel_nominal: float,
@@ -153,7 +154,8 @@ def calculer_remboursement_anticipe(
     montant_remboursement_anticipe: float
 ) -> dict:
     """
-    Simule l'impact d'un remboursement anticipé sur un prêt.
+    Simule l'impact d'un remboursement anticipé sur un prêt, en permettant
+    soit de réduire la durée, soit de réduire les mensualités.
 
     Returns:
         Un dictionnaire avec les résultats : 
@@ -165,26 +167,43 @@ def calculer_remboursement_anticipe(
     # --- ÉTAPE 1: Calculer le capital restant dû au moment du remboursement ---
     mois_remboursement = annee_remboursement * 12
     capital_restant_du = mensualite_hors_assurance * ((1 - (1+taux_mensuel_nominal)**-(duree_initiale_mois-mois_remboursement)) / taux_mensuel_nominal)
+    duree_initiale_restante_mois = duree_initiale_mois - mois_remboursement
+
+    # Si le remboursement est supérieur au capital restant, on ajuste
+    montant_remboursement_anticipe = min(montant_remboursement_anticipe, capital_restant_du)
     
     # --- ÉTAPE 2: Appliquer le remboursement anticipé ---
     nouveau_capital_a_rembourser = capital_restant_du - montant_remboursement_anticipe
 
     # --- ÉTAPE 3: Calculer le nouveau plan en fonction du choix de l'utilisateur ---
-    nouvelle_duree_restante_mois = -log(1 - (nouveau_capital_a_rembourser * taux_mensuel_nominal / mensualite_hors_assurance)) / log(1 + taux_mensuel_nominal)
-    nouvelle_duree_restante_mois = ceil(nouvelle_duree_restante_mois)
+    if nouveau_capital_a_rembourser <= 0:
+        # Le prêt est entièrement remboursé
+        nouvelle_duree_restante_mois = 0
+        nouvelle_mensualite_hors_assurance = 0
+    elif choix_impact == "Réduire la durée du prêt":
+        nouvelle_duree_restante_mois = -log(1 - (nouveau_capital_a_rembourser * taux_mensuel_nominal / mensualite_hors_assurance)) / log(1 + taux_mensuel_nominal)
+        nouvelle_duree_restante_mois = ceil(nouvelle_duree_restante_mois)
+        nouvelle_mensualite_hors_assurance = mensualite_hors_assurance
+    else: # "Réduire les mensualités"
+        nouvelle_duree_restante_mois = duree_initiale_restante_mois
+        part_1 = nouveau_capital_a_rembourser * taux_mensuel_nominal * (1 + taux_mensuel_nominal)**nouvelle_duree_restante_mois
+        part_2 = (1 + taux_mensuel_nominal)**nouvelle_duree_restante_mois - 1
+        nouvelle_mensualite_hors_assurance = part_1 / part_2
 
     # --- ÉTAPE 4: Calculer les gains ---
-    cout_interets_restants_avant = (mensualite_hors_assurance * (duree_initiale_mois - mois_remboursement)) - capital_restant_du
-    cout_interets_restants_apres = (mensualite_hors_assurance * nouvelle_duree_restante_mois) - nouveau_capital_a_rembourser
+    cout_interets_restants_avant = (mensualite_hors_assurance * (duree_initiale_mois - mois_remboursement)) - capital_restant_du 
+    cout_interets_restants_apres = (nouvelle_mensualite_hors_assurance * nouvelle_duree_restante_mois) - nouveau_capital_a_rembourser
     gain_interets = cout_interets_restants_avant - cout_interets_restants_apres
     
     # --- ÉTAPE 5: Retourner les résultats ---
-    duree_initiale_restante_mois = duree_initiale_mois - mois_remboursement
     nouvelle_duree_totale_mois = mois_remboursement + nouvelle_duree_restante_mois
 
     resultats = {
         "gain_interets": gain_interets,
         "nouvelle_duree_totale_ans": nouvelle_duree_totale_mois / 12,
         "duree_reduite_mois": duree_initiale_restante_mois - nouvelle_duree_restante_mois,
+        "ancienne_mensualite": mensualite_hors_assurance,
+        "nouvelle_mensualite": nouvelle_mensualite_hors_assurance,
+        "reduction_mensualite": mensualite_hors_assurance - nouvelle_mensualite_hors_assurance,
     }
     return resultats
