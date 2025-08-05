@@ -258,7 +258,6 @@ if emprunt:
         montant_remboursement_anticipe = st.number_input(
             "Montant du remboursement anticipé (€)",
             min_value=0,
-            value=10000,
             step=500,
             help="Combien souhaitez-vous rembourser en une seule fois ?"
         )
@@ -268,61 +267,63 @@ if emprunt:
             min_value=1,
             max_value=25, 
             value=5,
-            help="Au bout de combien d'années prévoyez-vous de faire ce remboursement ?"
+            help="Au bout de combien d'années prévoyez-vous de faire ce remboursement ?",
+            disabled=(montant_remboursement_anticipe == 0)
         )
 
         resultats_ra_list = []
     
-    # On itère sur df_prets
-    for index, pret_initial in df_prets.iterrows():
-        
-        # On ne fait le calcul que si l'année du RA est inférieure à la durée du prêt
-        if annee_remboursement < pret_initial['duree_annees']:
+    if montant_remboursement_anticipe>0:
+        # On itère sur df_prets
+        for index, pret_initial in df_prets.iterrows():
             
-            sim_ra = calculer_remboursement_anticipe(
-                mensualite_hors_assurance=pret_initial['mensualite_hors_assurance'],
-                duree_initiale_mois=pret_initial['duree_annees']*12,
-                taux_mensuel_nominal=pret_initial['taux_nominal_pct']/1200,
-                annee_remboursement=annee_remboursement,
-                montant_remboursement_anticipe=montant_remboursement_anticipe
+            # On ne fait le calcul que si l'année du RA est inférieure à la durée du prêt
+            if annee_remboursement < pret_initial['duree_annees']:
+                
+                sim_ra = calculer_remboursement_anticipe(
+                    mensualite_hors_assurance=pret_initial['mensualite_hors_assurance'],
+                    duree_initiale_mois=pret_initial['duree_annees']*12,
+                    taux_mensuel_nominal=pret_initial['taux_nominal_pct']/1200,
+                    annee_remboursement=annee_remboursement,
+                    montant_remboursement_anticipe=montant_remboursement_anticipe
+                )
+                
+                # On calcule le gain sur l'assurance
+                gain_assurance = (pret_initial['mensualite_avec_assurance'] - pret_initial['mensualite_hors_assurance']) * sim_ra['duree_reduite_mois']
+                gain_total = sim_ra['gain_interets'] + gain_assurance
+                
+                # On stocke les résultats de cette simulation dans un dictionnaire
+                resultats_ra_list.append({
+                    "Durée Initiale": f"{pret_initial['duree_annees']} ans",
+                    "Nouvelle Durée": formater_duree(sim_ra['nouvelle_duree_totale_ans']*12),
+                    "Temps Économisé": formater_duree(sim_ra['duree_reduite_mois']),
+                    "Gain Total Estimé": f"{gain_total:,.0f} €".replace(",", " ")
+                })
+
+        # On vérifie si on a des résultats à afficher
+        if resultats_ra_list:
+            df_ra = pd.DataFrame(resultats_ra_list)
+            
+            st.dataframe(
+                df_ra,
+                hide_index=True,
+                use_container_width=True
             )
-            
-            # On calcule le gain sur l'assurance
-            gain_assurance = (pret_initial['mensualite_avec_assurance'] - pret_initial['mensualite_hors_assurance']) * sim_ra['duree_reduite_mois']
-            gain_total = sim_ra['gain_interets'] + gain_assurance
-            
-            # On stocke les résultats de cette simulation dans un dictionnaire
-            resultats_ra_list.append({
-                "Durée Initiale": f"{pret_initial['duree_annees']} ans",
-                "Nouvelle Durée": f"{sim_ra['nouvelle_duree_totale_ans']:.1f} ans",
-                "Temps Économisé": formater_duree(sim_ra['duree_reduite_mois']),
-                "Gain Total Estimé": f"{gain_total:,.0f} €".replace(",", " ")
-            })
 
-    # On vérifie si on a des résultats à afficher
-    if resultats_ra_list:
-        df_ra = pd.DataFrame(resultats_ra_list)
-        
-        st.dataframe(
-            df_ra,
-            hide_index=True,
-            use_container_width=True
-        )
+            with st.expander("🤔 Pourquoi le temps économisé est-il si important ?"):
+                st.info(
+                    """
+                    **Ce n'est pas une simple division !**
 
-        with st.expander("🤔 Pourquoi le temps économisé est-il si important ?"):
-            st.info(
-                """
-                **Ce n'est pas une simple division !**
+                    Un remboursement anticipé ne supprime pas simplement les "dernières" mensualités. Il s'attaque directement au **capital restant dû**.
 
-                Un remboursement anticipé ne supprime pas simplement les "dernières" mensualités. Il s'attaque directement au **capital restant dû**.
+                    **Voici l'effet "boule de neige" :**
+                    1.  Votre capital à rembourser diminue instantanément.
+                    2.  Dès le mois suivant, les **intérêts sont calculés sur un capital plus faible**, et sont donc moins élevés.
+                    3.  Comme votre mensualité reste la même, une **plus grande partie sert à rembourser le capital**, ce qui accélère encore plus le processus.
 
-                **Voici l'effet "boule de neige" :**
-                1.  Votre capital à rembourser diminue instantanément.
-                2.  Dès le mois suivant, les **intérêts sont calculés sur un capital plus faible**, et sont donc moins élevés.
-                3.  Comme votre mensualité reste la même, une **plus grande partie sert à rembourser le capital**, ce qui accélère encore plus le processus.
-
-                Vous économisez donc non seulement le montant remboursé, mais surtout **tous les intérêts que ce montant aurait générés jusqu'à la fin du prêt.**
-                """
-            )
-    else:
-        st.warning("L'année de remboursement choisie est supérieure ou égale aux durées des prêts. Aucune simulation n'est possible.")
+                    Vous économisez donc non seulement le montant remboursé, mais surtout **tous les intérêts que ce montant aurait générés jusqu'à la fin du prêt.**
+                    """
+                )
+        else:
+            st.warning("L'année de remboursement choisie est supérieure ou égale aux durées des prêts. Aucune simulation n'est possible.")
