@@ -228,7 +228,6 @@ if emprunt:
     ]]
 
     # --- Affichage du DataFrame ---
-    # Le column_config est maintenant plus simple, car on ne formate plus les devises ici.
     st.dataframe(
         df_display,
         column_config={
@@ -249,3 +248,65 @@ if emprunt:
     
     fig = creation_graph(df_prets, salaire_total)
     st.plotly_chart(fig, use_container_width=True)
+
+
+    st.markdown("---")
+    st.header("⏩ Scénario de remboursement anticipé")
+
+    col_ra1, col_ra2 = st.columns(2)
+    with col_ra1:
+        montant_remboursement_anticipe = st.number_input(
+            "Montant du remboursement anticipé (€)",
+            min_value=0,
+            value=10000,
+            step=500,
+            help="Combien souhaitez-vous rembourser en une seule fois ?"
+        )
+    with col_ra2:
+        annee_remboursement = st.slider(
+            "Année du remboursement",
+            min_value=1,
+            max_value=25, 
+            value=5,
+            help="Au bout de combien d'années prévoyez-vous de faire ce remboursement ?"
+        )
+
+        resultats_ra_list = []
+    
+    # On itère sur df_prets
+    for index, pret_initial in df_prets.iterrows():
+        
+        # On ne fait le calcul que si l'année du RA est inférieure à la durée du prêt
+        if annee_remboursement < pret_initial['duree_annees']:
+            
+            sim_ra = calculer_remboursement_anticipe(
+                mensualite_hors_assurance=pret_initial['mensualite_hors_assurance'],
+                duree_initiale_mois=pret_initial['duree_annees']*12,
+                taux_mensuel_nominal=pret_initial['taux_nominal_pct']/1200,
+                annee_remboursement=annee_remboursement,
+                montant_remboursement_anticipe=montant_remboursement_anticipe
+            )
+            
+            # On calcule le gain sur l'assurance
+            gain_assurance = (pret_initial['mensualite_avec_assurance'] - pret_initial['mensualite_hors_assurance']) * sim_ra['duree_reduite_mois']
+            gain_total = sim_ra['gain_interets'] + gain_assurance
+            
+            # On stocke les résultats de cette simulation dans un dictionnaire
+            resultats_ra_list.append({
+                "Durée Initiale": f"{pret_initial['duree_annees']} ans",
+                "Nouvelle Durée": f"{sim_ra['nouvelle_duree_totale_ans']:.1f} ans",
+                "Temps Économisé": formater_duree(sim_ra['duree_reduite_mois']),
+                "Gain Total Estimé": f"{gain_total:,.0f} €".replace(",", " ")
+            })
+
+    # On vérifie si on a des résultats à afficher
+    if resultats_ra_list:
+        df_ra = pd.DataFrame(resultats_ra_list)
+        
+        st.dataframe(
+            df_ra,
+            hide_index=True,
+            use_container_width=True
+        )
+    else:
+        st.warning("L'année de remboursement choisie est supérieure ou égale aux durées des prêts. Aucune simulation n'est possible.")
