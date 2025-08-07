@@ -94,14 +94,8 @@ if montant_bien is not None:
     cout_total_projet = montant_bien + frais_notaire_valeur
 
     # 2. L'apport utilisé pour le calcul est le maximum entre l'apport souhaité (objectif) et l'épargne actuelle.
-    apport_objectif = montant_bien * (apport_souhaite_pct / 100)
-    apport = max(apport_objectif, epargne_totale)
-
-    # 3. Le montant à emprunter est calculé sur la base de cet apport objectif.
-    montant_a_emprunter = cout_total_projet - apport
-    
-    apport_validé = epargne_totale>=apport_objectif
-    emprunt = montant_a_emprunter>epargne_totale
+    apport_objectif = montant_bien * (apport_souhaite_pct / 100)   
+    apport_validé = epargne_totale>=apport_objectif 
 
     with st.container(border=True):
         col1, col2 = st.columns(2)
@@ -121,9 +115,20 @@ if montant_bien is not None:
             st.warning(f"Votre épargne représente {epargne_pct:.0f}% du projet, ce qui n'est généralement pas suffisant.")
         if apport_validé:
             st.success(f"De plus, votre épargne couvre l'apport souhaité de {apport_souhaite_pct}%.")
-            st.write(f"On considère donc désormais un apport de {formater_nombre(epargne_totale)}")
         else:
             st.write(f"Il vous manque {formater_nombre(apport_objectif-epargne_totale)} d'apport pour atteindre l'objectif.")
+        apport = st.number_input(
+                "Quel est votre apport personnel pour ce projet ?",
+                min_value=0,
+                max_value=montant_bien,
+                value=int(max(apport_objectif, epargne_totale)), 
+                step=1000
+            )
+
+        # 3. Le montant à emprunter est calculé sur la base de cet apport objectif.
+        montant_a_emprunter = cout_total_projet - apport
+        
+        emprunt = montant_a_emprunter>epargne_totale
 
         st.markdown("---")
 
