@@ -206,7 +206,7 @@ def calculer_remboursement_anticipe(
     return resultats
 
 # --- Fonctions de Création de Visuels ---
-
+@st.cache_data
 def creation_graph(df_prets: pd.DataFrame, salaire_total: float) -> go.Figure:
     """
     Crée un graphique Plotly combiné pour visualiser le compromis du prêt.
