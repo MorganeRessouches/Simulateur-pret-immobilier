@@ -2,7 +2,13 @@ import plotly.graph_objects as go
 import pandas as pd
 from math import log, ceil
 
-def formater_duree(nombre_mois):
+# --- Fonctions Utilitaires ---
+
+def formater_nombre(nombre: float) -> str:
+    """Formate un nombre en chaîne de caractères avec un espace comme séparateur de milliers."""
+    return f"{nombre:,.0f} €".replace(",", " ")
+
+def formater_duree(nombre_mois: float) -> str:
     """Convertit un nombre de mois en une chaîne de caractères "X an(s) et Y mois"."""
     nombre_mois = int(nombre_mois)
     
@@ -22,6 +28,7 @@ def formater_duree(nombre_mois):
         
     return " et ".join(parts)
 
+# --- Fonctions de Calcul Financier ---
 
 def calculer_details_pret(montant_emprunte: float, taux_annuel_nominal_pct: float, duree_annees: int, taux_annuel_assurance_pct: float) -> dict:
     """
@@ -66,83 +73,6 @@ def calculer_details_pret(montant_emprunte: float, taux_annuel_nominal_pct: floa
         "cout_total_credit": cout_total_credit,
         "salaire_mensuel_minimum": salaire_minimum,
     }
-
-def creation_graph(df_prets: pd.DataFrame, salaire_total: float) -> go.Figure:
-    """
-    Crée un graphique Plotly combiné (barres et ligne) pour visualiser
-    le compromis entre la durée du prêt, le coût total et la mensualité.
-
-    Args:
-        df_prets (pd.DataFrame): DataFrame contenant les résultats des simulations de prêt.
-                                 Doit contenir les colonnes 'duree_annees', 'cout_total_credit',
-                                 et 'salaire_mensuel_minimum'.
-        salaire_total (float): Le revenu mensuel total de l'emprunteur pour calculer
-                               le seuil d'endettement.
-
-    Returns:
-        go.Figure: Une figure Plotly prête à être affichée avec st.plotly_chart.
-    """
-    
-    fig = go.Figure()
-
-    # 1. Ajout des barres pour le salaire requis (Axe Y gauche)
-    fig.add_trace(go.Bar(
-        x=df_prets['duree_annees'],
-        y=df_prets['salaire_mensuel_minimum'],
-        name='Salaire requis',
-        marker_color='darkorange',
-        text=df_prets['salaire_mensuel_minimum'].apply(lambda x: f'{x:,.0f} €'.replace(',', ' ')),
-        textposition='inside', 
-        hoverinfo='x+name+text'
-    ))
-
-    # 2. Ajout de la ligne pour le coût total du crédit (Axe Y droit)
-    fig.add_trace(go.Scatter(
-        x=df_prets['duree_annees'],
-        y=df_prets['cout_total_credit'],
-        name='Coût total du crédit',
-        yaxis='y2',
-        mode='lines+markers+text',
-        line=dict(color='royalblue', width=3),
-        text=df_prets['cout_total_credit'].apply(lambda x: f'{x:,.0f} €'.replace(',', ' ')),
-        textposition='bottom center',
-        hoverinfo='x+name+text'
-    ))
-
-    # 3. Ajout de la ligne de seuil (salaire actuel)
-    fig.add_trace(go.Scatter(
-        x=[10, 30],
-        y=[salaire_total, salaire_total],
-        name=f'Salaire actuel : {salaire_total:,.0f} €'.replace(',', ' '),
-        mode='lines',
-        line=dict(color='firebrick', width=2, dash='dash'),
-        hoverinfo='skip'
-    ))
-
-    fig.update_layout(
-        title_text="Le compromis : Mensualité vs. Coût du Crédit",
-        xaxis_title="Durée du prêt (en années)",
-        legend=dict(
-            orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1
-        ),
-        yaxis=dict(
-            title="Salaire requis (€)",
-            tickfont=dict(color="darkorange"),
-            showgrid=False
-        ),
-        yaxis2=dict(
-            title="Coût total du crédit (€)",
-            tickfont=dict(color="royalblue"),
-            showgrid=False,
-            anchor="x",
-            overlaying="y",
-            side="right"
-        ),
-        template="plotly_white",
-        hovermode="x unified"
-    )
-
-    return fig
 
 
 def calculer_remboursement_anticipe(
@@ -207,3 +137,71 @@ def calculer_remboursement_anticipe(
         "reduction_mensualite": mensualite_hors_assurance - nouvelle_mensualite_hors_assurance,
     }
     return resultats
+
+# --- Fonctions de Création de Visuels ---
+
+def creation_graph(df_prets: pd.DataFrame, salaire_total: float) -> go.Figure:
+    """
+    Crée un graphique Plotly combiné pour visualiser le compromis du prêt.
+    (le code de la fonction reste le même)
+    """
+    # ... (code de la fonction inchangé) ...
+    fig = go.Figure()
+
+    # 1. Ajout des barres pour le salaire requis (Axe Y gauche)
+    fig.add_trace(go.Bar(
+        x=df_prets['duree_annees'],
+        y=df_prets['salaire_mensuel_minimum'],
+        name='Salaire requis',
+        marker_color='darkorange',
+        text=df_prets['salaire_mensuel_minimum'].apply(lambda x: f'{x:,.0f} €'.replace(',', ' ')),
+        textposition='inside', 
+        hoverinfo='x+name+text'
+    ))
+
+    # 2. Ajout de la ligne pour le coût total du crédit (Axe Y droit)
+    fig.add_trace(go.Scatter(
+        x=df_prets['duree_annees'],
+        y=df_prets['cout_total_credit'],
+        name='Coût total du crédit',
+        yaxis='y2',
+        mode='lines+markers+text',
+        line=dict(color='royalblue', width=3),
+        text=df_prets['cout_total_credit'].apply(lambda x: f'{x:,.0f} €'.replace(',', ' ')),
+        textposition='bottom center',
+        hoverinfo='x+name+text'
+    ))
+
+    # 3. Ajout de la ligne de seuil (salaire actuel)
+    fig.add_trace(go.Scatter(
+        x=[10, 30],
+        y=[salaire_total, salaire_total],
+        name=f'Salaire actuel : {formater_nombre(salaire_total)}',
+        mode='lines',
+        line=dict(color='firebrick', width=2, dash='dash'),
+        hoverinfo='skip'
+    ))
+
+    fig.update_layout(
+        title_text="Le compromis : Mensualité vs. Coût du Crédit",
+        xaxis_title="Durée du prêt (en années)",
+        legend=dict(
+            orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1
+        ),
+        yaxis=dict(
+            title="Salaire requis (€)",
+            tickfont=dict(color="darkorange"),
+            showgrid=False
+        ),
+        yaxis2=dict(
+            title="Coût total du crédit (€)",
+            tickfont=dict(color="royalblue"),
+            showgrid=False,
+            anchor="x",
+            overlaying="y",
+            side="right"
+        ),
+        template="plotly_white",
+        hovermode="x unified"
+    )
+    return fig

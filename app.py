@@ -106,13 +106,13 @@ if montant_bien is not None:
     with st.container(border=True):
         col1, col2 = st.columns(2)
         with col1:
-            st.metric(label="Coût total du projet", value=f"{cout_total_projet:,.0f} €".replace(",", " "))
-            st.caption(f"Dont {frais_notaire_valeur:,.0f} € de frais de notaire".replace(",", " "))
+            st.metric(label="Coût total du projet", value=formater_nombre(cout_total_projet))
+            st.caption(f"Dont {formater_nombre(frais_notaire_valeur)} de frais de notaire")
         with col2:
             # On affiche clairement l'apport qui a été utilisé dans le calcul (l'objectif)
-            st.metric(label="Apport considéré (Objectif)", value=f"{apport_objectif:,.0f} €".replace(",", " "))
+            st.metric(label="Apport considéré (Objectif)", value=formater_nombre(apport_objectif))
             epargne_pct = (epargne_totale/montant_bien)*100
-            st.caption(f"Votre épargne disponible est de {epargne_totale:,.0f} €.".replace(",", " "))
+            st.caption(f"Votre épargne disponible est de {formater_nombre(epargne_totale)}.")
         if epargne_pct>20:
             st.success(f"Félicitation ! Votre épargne représente {epargne_pct:.0f}% du projet, ce qui est largement suffisant.")
         elif epargne_pct>10:
@@ -121,15 +121,15 @@ if montant_bien is not None:
             st.warning(f"Votre épargne représente {epargne_pct:.0f}% du projet, ce qui n'est généralement pas suffisant.")
         if apport_validé:
             st.success(f"De plus, votre épargne couvre l'apport souhaité de {apport_souhaite_pct}%.")
-            st.write(f"On considère donc désormais un apport de {epargne_totale:,.0f} €".replace(",", " "))
+            st.write(f"On considère donc désormais un apport de {formater_nombre(epargne_totale)}")
         else:
-            st.write(f"Il vous manque {apport_objectif-epargne_totale:,.0f} € d'apport pour atteindre l'objectif.".replace(",", " "))
+            st.write(f"Il vous manque {formater_nombre(apport_objectif-epargne_totale)} d'apport pour atteindre l'objectif.")
 
         st.markdown("---")
 
         if emprunt:
-            st.metric(label="Montant à emprunter", value=f"{montant_a_emprunter:,.0f} €".replace(",", " "))
-            st.caption(f"Calcul : {cout_total_projet:,.0f} € (Coût total) - {apport:,.0f} € (Apport)".replace(",", " "))
+            st.metric(label="Montant à emprunter", value=formater_nombre(montant_a_emprunter))
+            st.caption(f"Calcul : {formater_nombre(cout_total_projet)} (Coût total) - {formater_nombre(apport)} (Apport)")
         else:
             st.success("Félicitations ! Votre apport couvre la totalité du coût du projet.")
 else:
@@ -138,8 +138,8 @@ else:
 st.markdown("---")
 st.subheader("💰 Récapitulatif de votre situation")
 col_s1, col_s2 = st.columns(2)
-col_s1.metric("Salaire net mensuel total", f"{salaire_total:,.0f} €".replace(",", " "))
-col_s2.metric("Capacité d'épargne mensuelle", f"{epargne_mensuelle_totale:,.0f} €".replace(",", " "))
+col_s1.metric("Salaire net mensuel total", formater_nombre(salaire_total))
+col_s2.metric("Capacité d'épargne mensuelle", formater_nombre(epargne_mensuelle_totale))
 
 if emprunt and not apport_validé:
     nombre_mois = (apport_objectif -  epargne_totale) / epargne_mensuelle_totale
@@ -149,7 +149,7 @@ if emprunt and not apport_validé:
     # Formatage de la date en "Mois Année"
     date_objectif_str = date_objectif.strftime("%B %Y").encode('latin-1').decode('utf-8')
     durée_str = formater_duree(nombre_mois)
-    st.info(f"Il vous faut encore {durée_str}, soit jusqu'en {date_objectif_str} pour compléter votre apport de {apport:,.0f} €.".replace(",", " "))
+    st.info(f"Il vous faut encore {durée_str}, soit jusqu'en {date_objectif_str} pour compléter votre apport de {formater_nombre(apport)}.")
 
 if emprunt:
     st.markdown("---")
@@ -184,7 +184,7 @@ if emprunt:
     def get_verdict(x):
         if x['taux_endettement_pct'] > 35:
             salaire_manquant = x['salaire_mensuel_minimum'] - salaire_total
-            return f"❌ Élevé : il vous manque {salaire_manquant:,.0f} €.".replace(",", " ")
+            return f"❌ Élevé : il vous manque {formater_nombre(salaire_manquant)}."
         elif x['taux_endettement_pct'] > 33:
             return "⚠️ Prudent"
         else:
@@ -197,13 +197,13 @@ if emprunt:
 
     # 1. Formatage des devises en chaînes de caractères avec séparateur d'espace
     df_display['mensualite_avec_assurance'] = df_display['mensualite_avec_assurance'].apply(
-        lambda x: f"{x:,.0f}".replace(",", " ") + " €"
+        lambda x: formater_nombre(x)
     )
     df_display['cout_total_credit'] = df_display['cout_total_credit'].apply(
-        lambda x: f"{x:,.0f}".replace(",", " ") + " €"
+        lambda x: formater_nombre(x)
     )
     df_display['salaire_mensuel_minimum'] = df_display['salaire_mensuel_minimum'].apply(
-        lambda x: f"{x:,.0f}".replace(",", " ") + " €"
+        lambda x: formater_nombre(x)
     )
 
     # 2. Renommage des colonnes pour un affichage plus clair
@@ -305,7 +305,7 @@ if emprunt:
 
                 resultat = {
                     "Durée Initiale": f"{pret_initial['duree_annees']} ans",
-                    "Gain Total Estimé": f"{gain_total:,.0f} €".replace(",", " ")
+                    "Gain Total Estimé": formater_nombre(gain_total)
                 }
                 
                 if choix_impact == "Réduire la durée du prêt":
@@ -316,9 +316,9 @@ if emprunt:
                     # On ajoute le coût de l'assurance à la nouvelle mensualité de crédit
                     nouvelle_mensualite_avec_assurance = sim_ra['nouvelle_mensualite'] + (mensualite_initale - pret_initial['mensualite_hors_assurance'])
                     
-                    resultat["Ancienne Mensualité"] = f"{mensualite_initale:,.0f} €".replace(",", " ")
-                    resultat["Nouvelle Mensualité"] = f"{nouvelle_mensualite_avec_assurance:,.0f} €".replace(",", " ")
-                    resultat["Baisse par mois"] = f"{sim_ra['reduction_mensualite']:,.0f} €".replace(",", " ")
+                    resultat["Ancienne Mensualité"] = formater_nombre(mensualite_initale)
+                    resultat["Nouvelle Mensualité"] = formater_nombre(nouvelle_mensualite_avec_assurance)
+                    resultat["Baisse par mois"] = formater_nombre(sim_ra['reduction_mensualite'])
 
                 resultats_ra_list.append(resultat)
 
