@@ -167,70 +167,7 @@ if emprunt:
         25: taux_25_ans,
     }
 
-    # On prépare une liste pour stocker les résultats de chaque simulation
-    resultats_prets = []
-    for duree, taux in durees_taux.items():
-        details_pret = calculer_details_pret(
-            montant_a_emprunter,
-            taux,
-            duree,
-            taux_assurance_pct
-        )
-        
-        # On ajoute le taux d'endettement, qui dépend du salaire total
-        details_pret['taux_endettement_pct'] = (details_pret['mensualite_avec_assurance'] / salaire_total) * 100 if salaire_total > 0 else 0
-        
-        resultats_prets.append(details_pret)
-
-    # On transforme notre liste de résultats en DataFrame Pandas pour un affichage facile
-    df_prets = pd.DataFrame(resultats_prets)
-    
-    # --- Création de la colonne "Verdict" ---
-    def get_verdict(x):
-        if x['taux_endettement_pct'] > 35:
-            salaire_manquant = x['salaire_mensuel_minimum'] - salaire_total
-            return f"❌ Élevé : il vous manque {formater_nombre(salaire_manquant)}."
-        elif x['taux_endettement_pct'] > 33:
-            return "⚠️ Prudent"
-        else:
-            return "✅ Faisable"
-
-    df_prets['Verdict'] = df_prets.apply(get_verdict, axis = 1)
-
-    # --- Préparation du DataFrame pour l'affichage ---
-    df_display = df_prets.copy()
-
-    # 1. Formatage des devises en chaînes de caractères avec séparateur d'espace
-    df_display['mensualite_avec_assurance'] = df_display['mensualite_avec_assurance'].apply(
-        lambda x: formater_nombre(x)
-    )
-    df_display['cout_total_credit'] = df_display['cout_total_credit'].apply(
-        lambda x: formater_nombre(x)
-    )
-    df_display['salaire_mensuel_minimum'] = df_display['salaire_mensuel_minimum'].apply(
-        lambda x: formater_nombre(x)
-    )
-
-    # 2. Renommage des colonnes pour un affichage plus clair
-    df_display = df_display.rename(columns={
-        'duree_annees': 'Durée (ans)',
-        'taux_nominal_pct': 'Taux nominal (%)',
-        'mensualite_avec_assurance': 'Mensualité',
-        'cout_total_credit': 'Coût total du crédit',
-        'salaire_mensuel_minimum': 'Salaire mensuel minimum',
-        'taux_endettement_pct': "Taux d'endettement (%)"
-    })
-
-    # 3. Sélection et réorganisation de l'ordre final des colonnes
-    df_display = df_display[[
-        'Durée (ans)',
-        'Taux nominal (%)',
-        'Mensualité',
-        'Coût total du crédit',
-        'Salaire mensuel minimum',
-        "Taux d'endettement (%)",
-        'Verdict'
-    ]]
+    df_prets, df_display = generer_tableau_comparatif(montant_a_emprunter, durees_taux, taux_assurance_pct, salaire_total)
 
     # --- Affichage du DataFrame ---
     st.dataframe(

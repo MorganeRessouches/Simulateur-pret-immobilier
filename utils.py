@@ -1,6 +1,7 @@
 import plotly.graph_objects as go
 import pandas as pd
 from math import log, ceil
+import streamlit as st
 
 # --- Fonctions Utilitaires ---
 
@@ -73,6 +74,72 @@ def calculer_details_pret(montant_emprunte: float, taux_annuel_nominal_pct: floa
         "cout_total_credit": cout_total_credit,
         "salaire_mensuel_minimum": salaire_minimum,
     }
+
+@st.cache_data
+def generer_tableau_comparatif(montant_a_emprunter: float, durees_taux: dict, taux_assurance_pct: float, salaire_total: float) -> pd.DataFrame:
+    """
+    Génère un DataFrame Pandas comparant plusieurs scénarios de prêt et le dayaframe adapté pour l'affichage associé.
+    """
+    resultats_prets = []
+    for duree, taux in durees_taux.items():
+        details_pret = calculer_details_pret(
+            montant_a_emprunter,
+            taux,
+            duree,
+            taux_assurance_pct
+        )
+        details_pret['taux_endettement_pct'] = (details_pret['mensualite_avec_assurance'] / salaire_total) * 100 if salaire_total > 0 else 0
+        resultats_prets.append(details_pret)
+    
+    df = pd.DataFrame(resultats_prets)
+
+    def get_verdict(x):
+        if x['taux_endettement_pct'] > 35:
+            salaire_manquant = x['salaire_mensuel_minimum'] - salaire_total
+            return f"❌ Élevé : il manque {formater_nombre(salaire_manquant)}"
+        elif x['taux_endettement_pct'] > 33:
+            return "⚠️ Prudent"
+        else:
+            return "✅ Faisable"
+
+    df['Verdict'] = df.apply(get_verdict, axis=1)
+
+    # --- Préparation du DataFrame pour l'affichage ---
+    df_display = df.copy()
+
+    # 1. Formatage des devises en chaînes de caractères avec séparateur d'espace
+    df_display['mensualite_avec_assurance'] = df_display['mensualite_avec_assurance'].apply(
+        lambda x: formater_nombre(x)
+    )
+    df_display['cout_total_credit'] = df_display['cout_total_credit'].apply(
+        lambda x: formater_nombre(x)
+    )
+    df_display['salaire_mensuel_minimum'] = df_display['salaire_mensuel_minimum'].apply(
+        lambda x: formater_nombre(x)
+    )
+
+    # 2. Renommage des colonnes pour un affichage plus clair
+    df_display = df_display.rename(columns={
+        'duree_annees': 'Durée (ans)',
+        'taux_nominal_pct': 'Taux nominal (%)',
+        'mensualite_avec_assurance': 'Mensualité',
+        'cout_total_credit': 'Coût total du crédit',
+        'salaire_mensuel_minimum': 'Salaire mensuel minimum',
+        'taux_endettement_pct': "Taux d'endettement (%)"
+    })
+
+    # 3. Sélection et réorganisation de l'ordre final des colonnes
+    df_display = df_display[[
+        'Durée (ans)',
+        'Taux nominal (%)',
+        'Mensualité',
+        'Coût total du crédit',
+        'Salaire mensuel minimum',
+        "Taux d'endettement (%)",
+        'Verdict'
+    ]]
+
+    return df, df_display
 
 
 def calculer_remboursement_anticipe(
