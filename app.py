@@ -78,7 +78,7 @@ with tab1:
             epargne_a = st.number_input("Épargne disponible", min_value=0, key='epargne_a')
             epargne_m_a = st.number_input("Épargne mensuelle", min_value=0, key='epargne_m_a')
         with col_b:
-            st.write("**Personne B**")
+            st.write("**Personne B (facultatif)**")
             salaire_b = st.number_input("Salaire net", min_value=0, key='salaire_b')
             epargne_b = st.number_input("Épargne disponible", min_value=0, key='epargne_b')
             epargne_m_b = st.number_input("Épargne mensuelle", min_value=0, key='epargne_m_b')
