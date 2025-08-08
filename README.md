@@ -8,6 +8,8 @@
 
 [**Lien vers l'application**](https://simulateur-pret-immobilier.streamlit.app)
 
+![Aperçu de l'application](https://github.com/MorganeRessouches/Simulateur-pret-immobilier/blob/1666755354024ed0fbf6374612d3ff8d905a2c64/assets/demo.gif)
+
 ## ✨ Fonctionnalités
 
 Cette application permet de passer d'une simple idée à un plan financier complet.
