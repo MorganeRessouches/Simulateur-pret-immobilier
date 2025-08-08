@@ -160,7 +160,7 @@ with tab1:
         date_objectif = date_actuelle + relativedelta(months=int(nombre_mois))
         locale.setlocale(locale.LC_TIME, 'fr_FR.UTF-8')
         # Formatage de la date en "Mois Année"
-        date_objectif_str = date_objectif.strftime("%B %Y").encode('latin-1').decode('utf-8')
+        date_objectif_str = date_objectif.strftime("%B %Y")
         durée_str = formater_duree(nombre_mois)
         st.info(f"Il vous faut encore {durée_str}, soit jusqu'en {date_objectif_str} pour compléter votre apport de {formater_nombre(apport)}.")
 
