@@ -74,14 +74,14 @@ with tab1:
         col_a, col_b = st.columns(2)
         with col_a:
             st.write("**Personne A**")
-            salaire_a = st.number_input("Salaire net", min_value=0, key='salaire_a')
-            epargne_a = st.number_input("Épargne disponible", min_value=0, key='epargne_a')
-            epargne_m_a = st.number_input("Épargne mensuelle", min_value=0, key='epargne_m_a')
+            salaire_a = st.number_input("Salaire net", min_value=0, step=50, key='salaire_a')
+            epargne_a = st.number_input("Épargne disponible", min_value=0, step=500, key='epargne_a')
+            epargne_m_a = st.number_input("Épargne mensuelle", min_value=0,step=50, key='epargne_m_a')
         with col_b:
             st.write("**Personne B (facultatif)**")
-            salaire_b = st.number_input("Salaire net", min_value=0, key='salaire_b')
-            epargne_b = st.number_input("Épargne disponible", min_value=0, key='epargne_b')
-            epargne_m_b = st.number_input("Épargne mensuelle", min_value=0, key='epargne_m_b')
+            salaire_b = st.number_input("Salaire net", min_value=0, step=50, key='salaire_b')
+            epargne_b = st.number_input("Épargne disponible", min_value=0, step=500, key='epargne_b')
+            epargne_m_b = st.number_input("Épargne mensuelle", min_value=0, step=50, key='epargne_m_b')
 
 
     # --- CALCULS AUTOMATIQUES ---
@@ -162,7 +162,7 @@ with tab1:
         # Formatage de la date en "Mois Année"
         date_objectif_str = date_objectif.strftime("%B %Y")
         durée_str = formater_duree(nombre_mois)
-        st.info(f"Il vous faut encore {durée_str}, soit jusqu'en {date_objectif_str} pour compléter votre apport de {formater_nombre(apport)}.")
+        st.info(f"Il vous faut encore {durée_str}, soit jusqu'en {date_objectif_str} pour compléter votre apport de {formater_nombre(apport_objectif)}.")
 
 
 with tab2:
