@@ -1,6 +1,12 @@
 # Simulateur de Prêt Immobilier
 
-Ce projet est une application web construite avec Python et Streamlit pour simuler les mensualités et le coût d'un prêt immobilier.
+[![Python](https://img.shields.io/badge/Python-3.11%2B-blue.svg)](https://www.python.org/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.47%2B-ff69b4.svg)](https://streamlit.io)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+**Transformez votre projet d'achat immobilier en un plan financier solide et visuel.** Cette application web, développée avec Python et Streamlit, va au-delà d'un simple calcul de mensualités. Elle vous offre une vision à 360° de votre projet, de la constitution de l'apport à l'impact d'un remboursement anticipé.
+
+[**Lien vers l'application**](https://simulateur-pret-immobilier.streamlit.app)
 
 ## ✨ Fonctionnalités
 
@@ -10,7 +16,7 @@ Cette application permet de passer d'une simple idée à un plan financier compl
 *   **📊 Analyse de l'endettement :** Compare votre salaire aux mensualités requises pour différentes durées de prêt (15, 20, 25 ans) et affiche votre taux d'endettement.
 *   **⏳ Analyse de l'apport :** Si votre apport est insuffisant, l'application estime le temps nécessaire pour atteindre votre objectif en fonction de votre capacité d'épargne.
 *   **📈 Graphiques interactifs :** Visualisez l'impact de la durée du prêt sur vos mensualités et sur le coût total des intérêts.
-*   **Scenario de remboursement anticipé :** Simulez l'impact d'un remboursement anticipé sur la durée et le coût total de votre crédit.
+*   **⏩ Scenario de remboursement anticipé :** Simulez l'impact d'un remboursement anticipé sur la durée et le coût total de votre crédit.
 
 ## Contexte et Point de Départ
 
@@ -25,30 +31,6 @@ Bien que fonctionnel, le format Excel présentait plusieurs limites :
 -   Difficile à partager et à utiliser sur mobile.
 
 L'objectif de ce projet est donc de migrer ce simulateur vers une application Python/Streamlit afin de le rendre plus accessible, plus maintenable et plus agréable à utiliser.
-
-## 🛠️ Feuille de route du projet (Roadmap)
-
-Voici les étapes de développement, de la migration de l'existant à l'ajout de nouvelles fonctionnalités.
-
--   [x] **Phase 1 : Socle de l'application**
-    -   [x] Initialisation du projet Streamlit
-    -   [x] Mise en place des champs de saisie principaux (montant du bien, salaires, épargne)
-    -   [x] Calculs de base : coût du projet, apport, montant à emprunter
-
--   [x] **Phase 2 : Logique de simulation**
-    -   [x] Affichage du temps nécessaire pour compléter l'apport
-    -   [x] Calcul des mensualités (assurance incluse) selon la durée du prêt (15, 20, 25 ans)
-    -   [x] Calcul du coût total des intérêts
-    -   [x] Calcul du taux d'endettement et affichage conditionnel (alerte si dépassement)
-
--   [x] **Phase 3 : Fonctionnalités avancées**
-    -   [x] Création du graphique interactif (coûts vs salaires)
-    -   [x] Module de simulation de remboursement anticipé
-
--   [ ] **Phase 4 : Finalisation et Déploiement**
-    -   [ ] Optimisation du code
-    -   [ ] Rédaction de la documentation finale
-    -   [ ] **Déploiement sur Streamlit Community Cloud**
 
 ## Installation
 
@@ -76,3 +58,10 @@ Pour lancer le simulateur, exécutez la commande suivante à la racine du projet
 ```bash
 streamlit run app.py
 ```
+
+## 📈 Pistes d'Amélioration
+
+Ce projet est fonctionnel et complet, mais voici quelques idées pour aller encore plus loin :
+
+*   [ ] **Génération d'un PDF :** Ajouter un bouton pour télécharger le résumé de la simulation au format PDF.
+*   [ ] **Tableau d'amortissement détaillé :** Afficher le tableau d'amortissement complet selon la durée du prêt.
