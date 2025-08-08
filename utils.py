@@ -88,7 +88,7 @@ def generer_tableau_comparatif(montant_a_emprunter: float, durees_taux: dict, ta
             duree,
             taux_assurance_pct
         )
-        details_pret['taux_endettement_pct'] = (details_pret['mensualite_avec_assurance'] / salaire_total) * 100 if salaire_total > 0 else 0
+        details_pret['taux_endettement_pct'] = (details_pret['mensualite_avec_assurance'] / salaire_total) * 100 if salaire_total > 0 else 100
         resultats_prets.append(details_pret)
     
     df = pd.DataFrame(resultats_prets)

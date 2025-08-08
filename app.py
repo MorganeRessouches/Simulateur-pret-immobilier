@@ -74,14 +74,14 @@ with tab1:
         col_a, col_b = st.columns(2)
         with col_a:
             st.write("**Personne A**")
-            salaire_a = st.number_input("Salaire net", min_value=0, value=2000, key='salaire_a')
-            epargne_a = st.number_input("Épargne disponible", min_value=0, value=15000, key='epargne_a')
-            epargne_m_a = st.number_input("Épargne mensuelle", min_value=0, value=700, key='epargne_m_a')
+            salaire_a = st.number_input("Salaire net", min_value=0, key='salaire_a')
+            epargne_a = st.number_input("Épargne disponible", min_value=0, key='epargne_a')
+            epargne_m_a = st.number_input("Épargne mensuelle", min_value=0, key='epargne_m_a')
         with col_b:
             st.write("**Personne B**")
-            salaire_b = st.number_input("Salaire net", min_value=0, value=2000, key='salaire_b')
-            epargne_b = st.number_input("Épargne disponible", min_value=0, value=20000, key='epargne_b')
-            epargne_m_b = st.number_input("Épargne mensuelle", min_value=0, value=800, key='epargne_m_b')
+            salaire_b = st.number_input("Salaire net", min_value=0, key='salaire_b')
+            epargne_b = st.number_input("Épargne disponible", min_value=0, key='epargne_b')
+            epargne_m_b = st.number_input("Épargne mensuelle", min_value=0, key='epargne_m_b')
 
 
     # --- CALCULS AUTOMATIQUES ---
@@ -154,7 +154,7 @@ with tab1:
     col_s1.metric("Salaire net mensuel total", formater_nombre(salaire_total))
     col_s2.metric("Capacité d'épargne mensuelle", formater_nombre(epargne_mensuelle_totale))
 
-    if emprunt and not apport_validé:
+    if emprunt and not apport_validé and epargne_mensuelle_totale!=0:
         nombre_mois = (apport_objectif -  epargne_totale) / epargne_mensuelle_totale
         date_actuelle = date.today()
         date_objectif = date_actuelle + relativedelta(months=int(nombre_mois))
