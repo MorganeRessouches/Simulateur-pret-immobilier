@@ -8,7 +8,7 @@
 
 [**Lien vers l'application**](https://simulateur-pret-immobilier.streamlit.app)
 
-![Aperçu de l'application](https://github.com/MorganeRessouches/Simulateur-pret-immobilier/blob/1666755354024ed0fbf6374612d3ff8d905a2c64/assets/demo.gif)
+![Aperçu de l'application](https://github.com/MorganeRessouches/Simulateur-pret-immobilier/blob/ea7b33e3781ee06337d1d0c33a61ee7422c76087/assets/demo.gif)
 
 ## ✨ Fonctionnalités
 
